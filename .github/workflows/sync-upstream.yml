@@ -9,7 +9,7 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - id: merge
@@ -25,7 +25,9 @@ jobs:
       - name: Redeploy Portainer stack
         if: steps.merge.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
         run: |
-          curl -fsS -X POST \
+          code=$(curl -sS -o /dev/null -w "%{http_code}" -X POST \
             -H "CF-Access-Client-Id: ${{ secrets.CF_ACCESS_CLIENT_ID }}" \
             -H "CF-Access-Client-Secret: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}" \
-            "${{ secrets.PORTAINER_WEBHOOK_URL }}"
+            "${{ secrets.PORTAINER_WEBHOOK_URL }}")
+          echo "Portainer responded with HTTP $code"
+          case "$code" in 2*) ;; *) exit 1 ;; esac
