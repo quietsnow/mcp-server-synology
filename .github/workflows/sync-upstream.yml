@@ -12,10 +12,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - run: |
+      - id: merge
+        run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
           git remote add upstream https://github.com/atom2ueki/mcp-server-synology.git
           git fetch upstream
+          before=$(git rev-parse HEAD)
           git merge upstream/main --no-edit
           git push
+          if [ "$before" != "$(git rev-parse HEAD)" ]; then echo "changed=true" >> "$GITHUB_OUTPUT"; fi
+      - name: Redeploy Portainer stack
+        if: steps.merge.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
+        run: curl -fsS -X POST "${{ secrets.PORTAINER_WEBHOOK_URL }}"
