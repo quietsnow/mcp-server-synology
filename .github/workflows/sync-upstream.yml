@@ -24,4 +24,8 @@ jobs:
           if [ "$before" != "$(git rev-parse HEAD)" ]; then echo "changed=true" >> "$GITHUB_OUTPUT"; fi
       - name: Redeploy Portainer stack
         if: steps.merge.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
-        run: curl -fsS -X POST "${{ secrets.PORTAINER_WEBHOOK_URL }}"
+        run: |
+          curl -fsS -X POST \
+            -H "CF-Access-Client-Id: ${{ secrets.CF_ACCESS_CLIENT_ID }}" \
+            -H "CF-Access-Client-Secret: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}" \
+            "${{ secrets.PORTAINER_WEBHOOK_URL }}"
