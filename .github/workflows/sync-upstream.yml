@@ -1,0 +1,30 @@
+services:
+  synology-mcp-http:
+    build: .
+    container_name: synology-mcp-http
+    command: ["python", "main.py"]
+    environment:
+      - MCP_HTTP=true
+      - MCP_HTTP_HOST=0.0.0.0
+      - MCP_HTTP_PORT=8765
+      - MCP_HTTP_PATH=/mcp
+      - MCP_HTTP_ALLOWED_HOSTS=synology-mcp.tiellium.com
+      - XDG_CONFIG_HOME=/home/mcpuser/.config
+      - SYNOLOGY_URL=${SYNOLOGY_URL}
+      - SYNOLOGY_USERNAME=${SYNOLOGY_USERNAME}
+      - SYNOLOGY_PASSWORD=${SYNOLOGY_PASSWORD}
+      - AUTO_LOGIN=true
+      - VERIFY_SSL=false
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      - ENABLE_XIAOZHI=false
+    ports:
+      - "127.0.0.1:8765:8765"
+    volumes:
+      - /volume1/docker/synology-mcp/logs:/app/logs
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
